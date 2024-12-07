@@ -27,9 +27,17 @@ public class Controller {
      * @param stage The primary stage of the application.
      */
     public Controller(Stage stage) {
-        this.stage = stage; // Assigning the stage
-        this.levelManager = new LevelManager(stage); // Initializing LevelManager with the stage
-        this.eventListener = new EventListener(levelManager); // Initializing EventListener with LevelManager
+        // Assigning the main stage
+        this.stage = stage;
+
+        // Initialize the LevelManager with the main stage
+        this.levelManager = new LevelManager(stage);
+
+        // Create the EventListener, passing the LevelManager as a dependency
+        this.eventListener = new EventListener(levelManager);
+
+        // Assign the EventListener to the LevelManager
+        this.levelManager.setEventListener(eventListener);
     }
 
     /**
@@ -37,11 +45,18 @@ public class Controller {
      */
     public void launchGame() {
         try {
-            stage.show(); // Display the stage to the user
-            levelManager.goToLevel("com.example.demo.levels.LevelOne"); // Start with Level One
+            // Display the main stage
+            stage.show();
+
+            // Start the game by transitioning to the first level
+            levelManager.goToLevel("com.example.demo.levels.LevelOne");
         } catch (Exception e) {
-            // Handle any unexpected errors that occur during the game launch
-            ErrorHandler.showError("Unexpected Error", "An unexpected error occurred during game launch", e);
+            // Handle any unexpected errors that occur during game launch
+            ErrorHandler.showError(
+                "Unexpected Error",
+                "An unexpected error occurred during game launch",
+                e
+            );
         }
     }
 }
