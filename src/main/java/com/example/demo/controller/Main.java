@@ -1,4 +1,4 @@
-package com.example.demo.controller;
+ package com.example.demo.controller;
 
 // Import necessary JavaFX and custom packages
 import com.example.demo.ui.MainMenu; // Import the MainMenu class

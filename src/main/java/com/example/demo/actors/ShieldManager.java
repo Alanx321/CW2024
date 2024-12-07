@@ -8,7 +8,7 @@ import com.example.demo.levels.LevelBoss;
 public class ShieldManager {
 
     private static final int MAX_FRAMES_WITH_SHIELD = 300; // Maximum duration of the shield
-    private static final double SHIELD_ACTIVATION_PROBABILITY = 0.01; // Probability of activation per frame
+    private static final double SHIELD_ACTIVATION_PROBABILITY = 0.005; // Probability of activation per frame
     private boolean isActive; // Indicates if the shield is currently active
     private int activeFrames; // Tracks the duration of shield activation
     private final LevelBoss levelBoss; // Reference to the level for shield updates

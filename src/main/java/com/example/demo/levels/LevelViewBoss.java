@@ -12,7 +12,7 @@ import javafx.scene.text.Text;
 public class LevelViewBoss extends LevelView {
 
     // Constants for positioning UI elements specific to the boss level
-    private static final double BOSS_HEALTH_X_POSITION = 1100; // X position for the boss health display
+    private static final double BOSS_HEALTH_X_POSITION = 900; // X position for the boss health display
     private static final double BOSS_HEALTH_Y_POSITION = 50;   // Y position for the boss health display
     private static final int SHIELD_X_POSITION = 1150;         // X position for the shield image
     private static final int SHIELD_Y_POSITION = 500;          // Y position for the shield image
@@ -52,7 +52,11 @@ public class LevelViewBoss extends LevelView {
      * @param health The current health of the boss.
      */
     public void updateBossHealth(int health) {
-        bossHealthDisplay.setText("Boss Health: " + health); // Update the health text
+    	
+    	// Ensure health is not negative
+        int clampedHealth = Math.max(health, 0);
+        
+        bossHealthDisplay.setText("Boss Health: " + clampedHealth); // Update the health text
         bossHealthDisplay.toFront(); // Ensure the health display is always on top of other elements
     }
 
