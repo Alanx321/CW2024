@@ -34,7 +34,7 @@ public class LevelBoss extends LevelParent {
         super(BACKGROUND_IMAGE_NAME, screenHeight, screenWidth, PLAYER_INITIAL_HEALTH, stage);
 
         // Initialize the boss with a reference to this LevelBoss
-        boss = new Boss(this);
+        boss = new Boss(this, screenHeight);
     }
 
     /**

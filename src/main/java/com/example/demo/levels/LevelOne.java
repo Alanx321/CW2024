@@ -2,7 +2,6 @@ package com.example.demo.levels;
 
 import com.example.demo.actors.ActiveActorDestructible;
 import com.example.demo.actors.EnemyPlane;
-
 import javafx.stage.Stage;
 
 /**
@@ -26,18 +25,17 @@ public class LevelOne extends LevelParent {
     // Probability of spawning an enemy on each frame
     private static final double ENEMY_SPAWN_PROBABILITY = 0.20;
 
-    // Initial health of the player's plane
-    private static final int PLAYER_INITIAL_HEALTH = 5;
-
     /**
      * Constructor for LevelOne.
+     * Initializes the level with specific configurations.
      *
      * @param screenHeight Height of the game screen.
      * @param screenWidth  Width of the game screen.
      * @param stage        The main game stage.
      */
     public LevelOne(double screenHeight, double screenWidth, Stage stage) {
-        super(BACKGROUND_IMAGE_NAME, screenHeight, screenWidth, PLAYER_INITIAL_HEALTH, stage);
+        // Call the parent class constructor with specific parameters for LevelOne
+        super(BACKGROUND_IMAGE_NAME, screenHeight, screenWidth, 5, stage);
     }
 
     /**
@@ -51,11 +49,9 @@ public class LevelOne extends LevelParent {
             loseGame(); // End the game with a loss
         }
         // Check if the player's kill count has reached the target to advance
-        else if (userHasReachedKillTarget()) {
+        else if (getUser().getNumberOfKills() >= KILLS_TO_ADVANCE) {
             goToNextLevel(NEXT_LEVEL); // Transition to the next level
         }
-        // Debugging output to track player's progress
-        System.out.println("Kill Target Reached: " + getUser().getNumberOfKills());
     }
 
     /**
@@ -64,7 +60,9 @@ public class LevelOne extends LevelParent {
      */
     @Override
     protected void initializeFriendlyUnits() {
-        getRoot().getChildren().add(getUser()); // Add the user plane to the game scene
+        // Add the user's plane to the root node of the game scene
+        getRoot().getChildren().add(getUser());
+        getUser().toFront(); // Bring to the front for visibility
     }
 
     /**
@@ -85,20 +83,25 @@ public class LevelOne extends LevelParent {
 
     /**
      * Instantiates the LevelView for LevelOne.
+     * Creates and configures the view specific to this level.
      *
-     * @return A LevelView instance specific to this level.
+     * @return A LevelView instance for LevelOne.
      */
     @Override
     protected LevelView instantiateLevelView() {
-        return new LevelView(getRoot(), PLAYER_INITIAL_HEALTH); // Create and return the LevelView
+        // Create and return a LevelView object for this level, with the player's initial health
+        return new LevelView(getRoot(), 5);
     }
 
     /**
-     * Checks if the player's kill count has reached the target to advance to the next level.
-     *
-     * @return True if the player's kill count meets or exceeds the target, otherwise false.
+     * Called on each frame update. Updates the game state, user plane, and checks game status.
      */
-    private boolean userHasReachedKillTarget() {
-        return getUser().getNumberOfKills() >= KILLS_TO_ADVANCE;
+    @Override
+    protected void updateScene() {
+        super.updateScene(); // Ensure parent logic is also executed
+
+        // Debugging log for user plane position
+        System.out.println("UserPlane Position: X=" + (getUser().getLayoutX() + getUser().getTranslateX()) +
+                           ", Y=" + (getUser().getLayoutY() + getUser().getTranslateY()));
     }
 }

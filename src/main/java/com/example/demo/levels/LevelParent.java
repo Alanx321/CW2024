@@ -105,7 +105,10 @@ public abstract class LevelParent {
         initializeBackgroundMusic(DEFAULT_LEVEL_MUSIC);
     }
 
-    protected abstract void initializeFriendlyUnits();
+    protected void initializeFriendlyUnits() {
+        getRoot().getChildren().add(user); // Ensures UserPlane is in the scene graph
+    }
+
 
     protected abstract void checkIfGameOver();
 
@@ -159,6 +162,9 @@ public abstract class LevelParent {
     protected void updateScene() {
         if (isPaused) return;
 
+        user.updateActor();
+        getRoot().layout(); // Ensure the scene graph re-renders
+        
         spawnEnemyUnits();
         updateActors();
         generateEnemyFire();

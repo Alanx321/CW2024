@@ -1,247 +1,161 @@
 package com.example.demo.actors;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.example.demo.levels.LevelBoss;
 import com.example.demo.projectiles.BossProjectile;
-import com.example.demo.ui.ShieldImage;
-
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import com.example.demo.ui.ShieldImage;
 
 /**
- * The Boss class represents the boss plane in the game.
- * It handles movement, shield activation, firing projectiles,
- * and ensures the shield is positioned correctly relative to the boss.
+ * Represents the boss plane in the game with movement, shields, and firing capabilities.
  */
 public class Boss extends FighterPlane {
 
     // Image file name for the boss plane
     private static final String IMAGE_NAME = "bossplane.png";
-    
+
     // Initial position of the boss plane
     private static final double INITIAL_X_POSITION = 1000.0; // Starting X position
     private static final double INITIAL_Y_POSITION = 400.0;  // Starting Y position
-
-    // Probability values for boss actions
-    private static final double BOSS_FIRE_RATE = 0.04; // Probability of firing a projectile per frame
-    private static final double BOSS_SHIELD_PROBABILITY = 0.01; // Probability of activating the shield
 
     // Visual and gameplay parameters for the boss plane
     private static final int IMAGE_HEIGHT = 300; // Height of the boss plane's image
     private static final int VERTICAL_VELOCITY = 8; // Speed of vertical movement
     private static final int HEALTH = 50; // Initial health of the boss plane
-    private static final int MOVE_FREQUENCY_PER_CYCLE = 5; // Frequency of movement changes
-    private static final int MAX_FRAMES_WITH_SAME_MOVE = 10; // Max frames for a single move direction
-    private static final int Y_POSITION_UPPER_BOUND = -100; // Upper Y boundary
-    private static final int Y_POSITION_LOWER_BOUND = 475;  // Lower Y boundary
-    private static final int MAX_FRAMES_WITH_SHIELD = 300;  // Max duration for shield in frames
+    private static final boolean DEBUG_HITBOXES = true; // Enable or disable hitbox visualization
 
-    // Enable or disable hitbox visualization (debugging tool)
-    private static final boolean DEBUG_HITBOXES = true;
-
-    // Movement pattern and state tracking for the boss
-    private final List<Integer> movePattern; // Movement pattern for vertical motion
-    private boolean isShielded;              // Whether the boss has an active shield
-    private int consecutiveMovesInSameDirection; // Tracks consecutive frames with the same move
-    private int indexOfCurrentMove;          // Current move index in the movement pattern
-    private int framesWithShieldActivated;   // Number of frames the shield has been active
+    // Dynamic movement boundaries based on the game screen
+    private final double Y_POSITION_UPPER_BOUND; // Upper boundary for vertical movement
+    private final double Y_POSITION_LOWER_BOUND; // Lower boundary for vertical movement
 
     // Reference to the LevelBoss instance
     private final LevelBoss levelBoss;
 
+    // Manager for the boss's shield
+    private final ShieldManager shieldManager;
+
+    // Manager for the boss's movement pattern
+    private final MovementPattern movementPattern;
+
     /**
-     * Constructor for the Boss class.
+     * Constructs a new Boss instance.
      *
-     * @param levelBoss Reference to the LevelBoss instance.
+     * @param levelBoss The level containing this boss.
+     * @param screenHeight The height of the game screen.
      */
-    public Boss(LevelBoss levelBoss) {
-        super(IMAGE_NAME, IMAGE_HEIGHT, INITIAL_X_POSITION, INITIAL_Y_POSITION, HEALTH);
-        this.levelBoss = levelBoss;
-        this.movePattern = new ArrayList<>();
-        this.consecutiveMovesInSameDirection = 0;
-        this.indexOfCurrentMove = 0;
-        this.framesWithShieldActivated = 0;
-        this.isShielded = false;
-        initializeMovePattern(); // Create the movement pattern for the boss
+    public Boss(LevelBoss levelBoss, double screenHeight) {
+        super(IMAGE_NAME, IMAGE_HEIGHT, INITIAL_X_POSITION, INITIAL_Y_POSITION, HEALTH); // Initialize parent class
+        this.levelBoss = levelBoss; // Set reference to the level
+        this.shieldManager = new ShieldManager(levelBoss); // Initialize shield manager
+        this.movementPattern = new MovementPattern(VERTICAL_VELOCITY, 5, 10); // Initialize movement pattern manager
+
+        // Dynamically calculate movement boundaries
+        this.Y_POSITION_UPPER_BOUND = 0; // Top of the screen
+        this.Y_POSITION_LOWER_BOUND = screenHeight - IMAGE_HEIGHT; // Bottom of the screen, adjusted for boss size
     }
 
     /**
-     * Updates the position of the boss plane and synchronizes the shield's position.
-     * Ensures the boss stays within the game boundaries.
+     * Updates the position of the boss and synchronizes the shield.
      */
     @Override
     public void updatePosition() {
-        double initialTranslateY = getTranslateY();
-        moveVertically(getNextMove()); // Move based on the next movement pattern value
+        double initialTranslateY = getTranslateY(); // Store the initial translation on Y-axis
 
-        // Ensure the boss does not go out of bounds
+        // Get the next move value from the movement pattern and move vertically
+        moveVertically(movementPattern.getNextMove());
+
+        // Ensure the boss stays within vertical boundaries
         double currentPosition = getLayoutY() + getTranslateY();
         if (currentPosition < Y_POSITION_UPPER_BOUND || currentPosition > Y_POSITION_LOWER_BOUND) {
-            setTranslateY(initialTranslateY); // Reset position if out of bounds
+            setTranslateY(initialTranslateY); // Reset to previous position if out of bounds
         }
 
-        // Synchronize the shield's position with the boss
-        synchronizeShieldPosition();
+        synchronizeShieldPosition(); // Ensure shield stays aligned with the boss
     }
 
     /**
-     * Synchronizes the shield's position to always appear in front of and slightly above the boss plane.
+     * Synchronizes the shield's position with the boss's position.
      */
     private void synchronizeShieldPosition() {
         if (levelBoss != null && levelBoss.getLevelViewBoss() != null) {
-            ShieldImage shieldImage = levelBoss.getLevelViewBoss().getShieldImage();
-
-            // Adjust the shield's position based on the boss's current position
-            shieldImage.setLayoutX(this.getLayoutX() + 30); // Position shield to the right
-            shieldImage.setLayoutY(this.getLayoutY() + this.getTranslateY() - 50); // Position shield slightly above
+            ShieldImage shieldImage = levelBoss.getLevelViewBoss().getShieldImage(); // Get the shield image
+            if (shieldImage != null) {
+                shieldImage.setLayoutX(getLayoutX() + 30); // Position shield horizontally relative to the boss
+                shieldImage.setLayoutY(getLayoutY() + getTranslateY() - 50); // Position shield vertically relative to the boss
+            }
         }
     }
 
     /**
-     * Updates the actor state, including movement and shield logic.
+     * Updates the boss, including movement and shield logic.
      */
     @Override
     public void updateActor() {
-        updatePosition(); // Update the position of the boss
-        updateShield();   // Handle shield activation and deactivation logic
+        updatePosition(); // Update position of the boss
+        shieldManager.updateShield(); // Update shield state
     }
 
     /**
-     * Fires a projectile from the boss plane's current position based on a probability.
+     * Fires a projectile if the fire condition is met.
      *
-     * @return A new BossProjectile instance if fired, otherwise null.
+     * @return A new BossProjectile or null if no projectile is fired.
      */
     @Override
     public ActiveActorDestructible fireProjectile() {
-        if (Math.random() < BOSS_FIRE_RATE) { // Random chance to fire a projectile
-            double targetY = getLayoutY() + getTranslateY(); // Aim at the current position
-            return new BossProjectile(targetY); // Create and return the projectile
+        // Fire a projectile with a 4% chance per frame
+        if (Math.random() < 0.04) {
+            return new BossProjectile(getLayoutY() + getTranslateY()); // Create and return the projectile
         }
-        return null;
+        return null; // Return null if no projectile is fired
     }
 
     /**
-     * Handles damage taken by the boss plane. Damage is blocked if the shield is active.
+     * Handles damage taken by the boss. Damage is blocked if the shield is active.
      */
     @Override
     public void takeDamage() {
-        if (!isShielded) { // Only take damage if the shield is inactive
-            super.takeDamage(); // Call the parent method to reduce health
-            levelBoss.updateBossHealthDisplay(getHealth()); // Notify LevelBoss to update health display
+        if (!shieldManager.isShieldActive()) { // Check if shield is inactive
+            super.takeDamage(); // Reduce health using the parent class method
+            levelBoss.updateBossHealthDisplay(getHealth()); // Notify LevelBoss to update the health display
         }
     }
 
     /**
-     * Initializes the movement pattern for the boss plane.
-     * The movement alternates between upward, downward, and stationary.
-     */
-    private void initializeMovePattern() {
-        for (int i = 0; i < MOVE_FREQUENCY_PER_CYCLE; i++) {
-            movePattern.add(VERTICAL_VELOCITY);  // Move up
-            movePattern.add(-VERTICAL_VELOCITY); // Move down
-            movePattern.add(0);                 // No movement
-        }
-        Collections.shuffle(movePattern); // Randomize the movement pattern
-    }
-
-    /**
-     * Retrieves the next move in the movement pattern.
+     * Renders the boss's hitbox for debugging purposes.
      *
-     * @return The vertical velocity for the next move.
+     * @param root The root group to which the hitbox will be added.
      */
-    private int getNextMove() {
-        int currentMove = movePattern.get(indexOfCurrentMove); // Get the current move
-        consecutiveMovesInSameDirection++;
+    public void renderHitbox(Group root) {
+        if (!DEBUG_HITBOXES) return; // Skip rendering if debugging is disabled
 
-        // Shuffle the movement pattern if the current move is repeated too many times
-        if (consecutiveMovesInSameDirection >= MAX_FRAMES_WITH_SAME_MOVE) {
-            Collections.shuffle(movePattern);
-            consecutiveMovesInSameDirection = 0; // Reset the counter
-            indexOfCurrentMove++;
-        }
+        Bounds bounds = getReducedBounds(); // Get reduced hitbox bounds
 
-        // Reset the index if it exceeds the pattern size
-        if (indexOfCurrentMove >= movePattern.size()) {
-            indexOfCurrentMove = 0;
-        }
+        // Create a rectangle representing the hitbox
+        Rectangle hitbox = new Rectangle(
+            bounds.getMinX(),
+            bounds.getMinY(),
+            bounds.getWidth(),
+            bounds.getHeight()
+        );
+        hitbox.setFill(Color.TRANSPARENT); // Make the fill transparent
+        hitbox.setStroke(Color.RED); // Set a red border for the hitbox
+        hitbox.setStrokeWidth(2); // Set stroke width
 
-        return currentMove; // Return the next movement value
+        root.getChildren().add(hitbox); // Add the hitbox to the root group
     }
 
     /**
-     * Updates the shield's state, including activation and deactivation logic.
-     */
-    private void updateShield() {
-        if (isShielded) {
-            framesWithShieldActivated++; // Track how long the shield has been active
-        } else if (shieldShouldBeActivated()) {
-            activateShield(); // Activate the shield
-        }
-        if (shieldExhausted()) {
-            deactivateShield(); // Deactivate the shield if the duration is exceeded
-        }
-    }
-
-    /**
-     * Determines if the shield should be activated.
+     * Retrieves a reduced hitbox for collision detection.
      *
-     * @return True if the shield should activate, otherwise false.
-     */
-    private boolean shieldShouldBeActivated() {
-        return Math.random() < BOSS_SHIELD_PROBABILITY; // Random chance for shield activation
-    }
-
-    /**
-     * Checks if the shield's duration has been exhausted.
-     *
-     * @return True if the shield should deactivate, otherwise false.
-     */
-    private boolean shieldExhausted() {
-        return framesWithShieldActivated >= MAX_FRAMES_WITH_SHIELD;
-    }
-
-    /**
-     * Activates the boss's shield.
-     */
-    private void activateShield() {
-        isShielded = true; // Set shielded state to true
-        levelBoss.updateShieldState(); // Notify the level to visually display the shield
-    }
-
-    /**
-     * Deactivates the boss's shield.
-     */
-    private void deactivateShield() {
-        isShielded = false; // Set shielded state to false
-        framesWithShieldActivated = 0; // Reset the shield activation counter
-        levelBoss.updateShieldState(); // Notify the level to visually hide the shield
-    }
-
-    /**
-     * Checks if the boss currently has an active shield.
-     *
-     * @return True if the shield is active, otherwise false.
-     */
-    public boolean isShielded() {
-        return isShielded;
-    }
-
-    /**
-     * Retrieves the reduced bounds for collision detection.
-     * The reduced bounds create a smaller hitbox for more precise collisions.
-     *
-     * @return A BoundingBox representing the reduced hitbox.
+     * @return A smaller bounding box for more precise collision detection.
      */
     @Override
     public Bounds getReducedBounds() {
-        Bounds originalBounds = this.getBoundsInLocal();
-        double margin = 30; // Adjust the margin to shrink the hitbox
+        Bounds originalBounds = this.getBoundsInLocal(); // Get original bounds
+        double margin = 30; // Margin to reduce the hitbox size
         return new BoundingBox(
             originalBounds.getMinX() + margin,
             originalBounds.getMinY() + margin,
@@ -251,27 +165,11 @@ public class Boss extends FighterPlane {
     }
 
     /**
-     * Renders the hitbox for debugging purposes.
+     * Checks if the boss currently has an active shield.
      *
-     * @param root The Group object representing the game scene's root node.
+     * @return True if the shield is active, otherwise false.
      */
-    public void renderHitbox(Group root) {
-        if (!DEBUG_HITBOXES) return; // Skip rendering if debugging is disabled
-
-        // Get the reduced hitbox bounds
-        Bounds bounds = getReducedBounds();
-        
-        // Create a rectangle to represent the hitbox
-        Rectangle hitbox = new Rectangle(
-            bounds.getMinX(),
-            bounds.getMinY(),
-            bounds.getWidth(),
-            bounds.getHeight()
-        );
-        hitbox.setFill(Color.TRANSPARENT); // Transparent fill for the hitbox
-        hitbox.setStroke(Color.RED);       // Red outline for visibility
-        hitbox.setStrokeWidth(2);          // Optional: Adjust stroke width
-
-        root.getChildren().add(hitbox); // Add the hitbox to the scene for debugging
+    public boolean isShielded() {
+        return shieldManager.isShieldActive(); // Delegate shield status to ShieldManager
     }
 }

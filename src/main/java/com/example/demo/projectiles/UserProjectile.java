@@ -1,5 +1,6 @@
 package com.example.demo.projectiles;
 
+import com.example.demo.actors.UserPlane;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.Group;
@@ -9,34 +10,57 @@ import javafx.scene.shape.Rectangle;
 /**
  * UserProjectile represents the projectiles fired by the player's plane.
  * It moves horizontally to the right with a specified velocity and has a reduced hitbox for better precision.
+ * The projectile's position is dynamically updated to follow the UserPlane if a reference is provided.
  */
 public class UserProjectile extends Projectile {
 
     // Constants for projectile properties
-    private static final String IMAGE_NAME = "userfire.png";  // Image representing the projectile
-    private static final int IMAGE_HEIGHT = 125;             // Height of the projectile image
-    private static final int HORIZONTAL_VELOCITY = 15;       // Speed of horizontal movement
-    private static final int HITBOX_MARGIN = 30;             // Margin to reduce the hitbox size
-    private static final boolean DEBUG_HITBOXES = true;      // Enable/disable hitbox visualization
+    private static final String IMAGE_NAME = "projectile.png";  // Image representing the projectile
+    private static final int IMAGE_HEIGHT = 125;               // Height of the projectile image
+    private static final int HORIZONTAL_VELOCITY = 15;         // Speed of horizontal movement
+    private static final int HITBOX_MARGIN = 30;               // Margin to reduce the hitbox size
+    private static final boolean DEBUG_HITBOXES = false;       // Enable/disable hitbox visualization
+
+    private final UserPlane userPlane; // Reference to the user plane (can be null for static projectiles)
 
     /**
-     * Constructor for UserProjectile.
+     * Constructor for UserProjectile using a UserPlane reference.
+     * The projectile will follow the UserPlane dynamically.
+     *
+     * @param userPlane The UserPlane instance firing this projectile.
+     */
+    public UserProjectile(UserPlane userPlane) {
+        super(IMAGE_NAME, IMAGE_HEIGHT, userPlane.getLayoutX() + 110, userPlane.getLayoutY());
+        this.userPlane = userPlane; // Store the reference to the UserPlane
+    }
+
+    /**
+     * Constructor for UserProjectile using static positions.
+     * The projectile will not follow a UserPlane dynamically.
      *
      * @param initialXPos The initial X position of the projectile.
      * @param initialYPos The initial Y position of the projectile.
      */
     public UserProjectile(double initialXPos, double initialYPos) {
-        // Initialize the projectile with its image, size, and position
         super(IMAGE_NAME, IMAGE_HEIGHT, initialXPos, initialYPos);
+        this.userPlane = null; // No reference to a UserPlane (static projectile)
     }
 
     /**
      * Updates the position of the projectile.
-     * Moves it horizontally to the right based on its velocity.
+     * Synchronizes the projectile's position with the UserPlane's position if a reference exists.
+     * Otherwise, it moves horizontally at a constant velocity.
      */
     @Override
     public void updatePosition() {
-        moveHorizontally(HORIZONTAL_VELOCITY); // Move the projectile to the right
+        if (userPlane != null) {
+            // Dynamically align with the UserPlane
+            setTranslateX(userPlane.getLayoutX() + 110);
+            setTranslateY(userPlane.getLayoutY());
+        } else {
+            // Move horizontally without syncing (static projectile behavior)
+            moveHorizontally(HORIZONTAL_VELOCITY);
+        }
     }
 
     /**
@@ -44,7 +68,7 @@ public class UserProjectile extends Projectile {
      */
     @Override
     public void updateActor() {
-        updatePosition(); // Call the updatePosition method to move the projectile
+        updatePosition(); // Call the updatePosition method to update the projectile
     }
 
     /**
@@ -75,7 +99,7 @@ public class UserProjectile extends Projectile {
 
         // Get the reduced hitbox bounds
         Bounds bounds = getReducedBounds();
-        
+
         // Create a rectangle to represent the hitbox
         Rectangle hitbox = new Rectangle(
             bounds.getMinX(),
@@ -86,5 +110,31 @@ public class UserProjectile extends Projectile {
         hitbox.setFill(Color.TRANSPARENT); // Transparent fill for the hitbox
         hitbox.setStroke(Color.RED);       // Red outline for visibility
         root.getChildren().add(hitbox);    // Add the hitbox rectangle to the game scene
+    }
+
+    /**
+     * Handles damage taken by the projectile.
+     * Projectiles are immediately destroyed when they take damage.
+     */
+    @Override
+    public void takeDamage() {
+        // Destroy the projectile upon taking damage
+        destroy();
+        System.out.println("UserProjectile took damage and was destroyed."); // Debug message
+    }
+
+    /**
+     * Retrieves a string representation of the UserProjectile.
+     * Useful for debugging or logging purposes.
+     *
+     * @return A string containing details about the projectile.
+     */
+    @Override
+    public String toString() {
+        return "UserProjectile{" +
+                "positionX=" + getLayoutX() +
+                ", positionY=" + getLayoutY() +
+                ", followsUserPlane=" + (userPlane != null) +
+                '}';
     }
 }

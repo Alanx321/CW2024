@@ -1,51 +1,89 @@
 package com.example.demo.controller;
 
-import com.example.demo.ui.MainMenu;
-
-import javafx.application.Application;
-import javafx.stage.Stage;
+// Import necessary JavaFX and custom packages
+import com.example.demo.ui.MainMenu; // Import the MainMenu class
+import javafx.application.Application; // Import JavaFX application base class
+import javafx.stage.Stage; // Import JavaFX stage class
 
 /**
  * The Main class serves as the entry point for the Sky Battle game.
- * It initializes the application window and launches the main menu.
+ * It initializes the application lifecycle and delegates responsibilities.
  */
 public class Main extends Application {
 
     // Constants for the application window
-    private static final int SCREEN_WIDTH = 1300; // Width of the application window
-    private static final int SCREEN_HEIGHT = 750; // Height of the application window
-    private static final String TITLE = "Sky Battle"; // Title of the application window
+    private static final int SCREEN_WIDTH = 1300; // Define the width of the application window
+    private static final int SCREEN_HEIGHT = 750; // Define the height of the application window
+    private static final String TITLE = "Sky Battle"; // Define the title of the application window
 
     /**
-     * The start method is called when the JavaFX application is launched.
-     * It sets up the primary stage and displays the main menu.
+     * The start method is the entry point for the JavaFX application lifecycle.
+     * It delegates the setup and menu display to other classes.
      *
-     * @param primaryStage The main stage for the application.
+     * @param primaryStage The primary stage for the application window.
      */
     @Override
     public void start(Stage primaryStage) {
-        // Set the properties of the primary stage
-        primaryStage.setTitle(TITLE); // Set the window title
-        primaryStage.setResizable(false); // Disable window resizing
-        primaryStage.setHeight(SCREEN_HEIGHT); // Set the window height
-        primaryStage.setWidth(SCREEN_WIDTH); // Set the window width
+        // Create an instance of the ApplicationConfigurator class
+        ApplicationConfigurator configurator = new ApplicationConfigurator();
+
+        // Configure the primary stage properties
+        configurator.configureStage(primaryStage, TITLE, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // Launch the MainMenu
-        MainMenu mainMenu = new MainMenu(); // Create an instance of the main menu
+        MainMenuLauncher menuLauncher = new MainMenuLauncher();
         try {
-            mainMenu.start(primaryStage); // Start the main menu interface
+            menuLauncher.launchMainMenu(primaryStage); // Start the main menu
         } catch (Exception e) {
-            e.printStackTrace(); // Log any exceptions that occur during launch
+            e.printStackTrace(); // Log any exceptions that occur during menu launch
         }
     }
 
     /**
-     * The main method is the entry point for the application.
-     * It launches the JavaFX application lifecycle.
+     * The main method is the entry point of the application.
+     * It starts the JavaFX application lifecycle.
      *
      * @param args Command-line arguments (not used in this application).
      */
     public static void main(String[] args) {
-        launch(); // Start the JavaFX application
+        launch(); // Launch the JavaFX application
+    }
+}
+
+/**
+ * The ApplicationConfigurator class is responsible for configuring the application window.
+ */
+class ApplicationConfigurator {
+
+    /**
+     * Configures the primary stage properties for the application.
+     *
+     * @param stage  The stage to configure.
+     * @param title  The title of the application window.
+     * @param width  The width of the application window.
+     * @param height The height of the application window.
+     */
+    public void configureStage(Stage stage, String title, int width, int height) {
+        stage.setTitle(title); // Set the window title
+        stage.setResizable(false); // Disable window resizing
+        stage.setWidth(width); // Set the window width
+        stage.setHeight(height); // Set the window height
+    }
+}
+
+/**
+ * The MainMenuLauncher class is responsible for initializing and launching the main menu.
+ */
+class MainMenuLauncher {
+
+    /**
+     * Launches the main menu interface.
+     *
+     * @param stage The stage on which the main menu will be displayed.
+     * @throws Exception If an error occurs while launching the menu.
+     */
+    public void launchMainMenu(Stage stage) throws Exception {
+        MainMenu mainMenu = new MainMenu(); // Create an instance of the main menu
+        mainMenu.start(stage); // Start the main menu interface
     }
 }

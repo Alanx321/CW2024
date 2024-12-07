@@ -1,6 +1,6 @@
-package com.example.demo.actors;
+package com.example.demo.actors; // Declare package for actors
 
-import com.example.demo.Destructible;
+import com.example.demo.Destructible; // Import Destructible interface
 
 /**
  * Abstract class representing an active actor that can be destroyed.
@@ -21,8 +21,8 @@ public abstract class ActiveActorDestructible extends ActiveActor implements Des
      * @param initialYPos  Initial Y position of the actor on the screen
      */
     public ActiveActorDestructible(String imageName, int imageHeight, double initialXPos, double initialYPos) {
-        super(imageName, imageHeight, initialXPos, initialYPos);
-        isDestroyed = false; // Initialize as not destroyed
+        super(imageName, imageHeight, initialXPos, initialYPos); // Initialize superclass properties
+        isDestroyed = false; // Initialize the destroyed flag as false
     }
 
     /**
@@ -30,20 +30,20 @@ public abstract class ActiveActorDestructible extends ActiveActor implements Des
      * Defines specific movement logic for each destructible actor type.
      */
     @Override
-    public abstract void updatePosition();
+    public abstract void updatePosition(); // Define abstract method for position updates
 
     /**
      * Abstract method to update the state or behavior of the actor.
      * Intended to handle any additional updates beyond position changes.
      */
-    public abstract void updateActor();
+    public abstract void updateActor(); // Define abstract method for general updates
 
     /**
      * Abstract method to handle damage logic for the actor.
      * Subclasses must define how the actor takes damage.
      */
     @Override
-    public abstract void takeDamage();
+    public abstract void takeDamage(); // Define abstract method for damage handling
 
     /**
      * Marks the actor as destroyed and updates its state.
@@ -59,7 +59,7 @@ public abstract class ActiveActorDestructible extends ActiveActor implements Des
      * @param isDestroyed Boolean flag indicating whether the actor is destroyed
      */
     protected void setDestroyed(boolean isDestroyed) {
-        this.isDestroyed = isDestroyed;
+        this.isDestroyed = isDestroyed; // Update the destroyed flag with the provided value
     }
 
     /**
@@ -68,6 +68,6 @@ public abstract class ActiveActorDestructible extends ActiveActor implements Des
      * @return true if the actor is destroyed, false otherwise
      */
     public boolean isDestroyed() {
-        return isDestroyed;
+        return isDestroyed; // Return the current destruction state
     }
 }

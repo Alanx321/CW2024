@@ -1,92 +1,106 @@
 package com.example.demo.actors;
 
-import com.example.demo.projectiles.UserProjectile;
-
+import com.example.demo.projectiles.ProjectileFiringBehavior;
+import com.example.demo.projectiles.DefaultProjectileFiringBehavior;
+import com.example.demo.utils.KillCountTracker;
+import com.example.demo.utils.HitboxRenderer;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.Group;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 
 /**
  * UserPlane represents the player's aircraft in the game.
- * It extends FighterPlane and includes logic for movement, firing projectiles, and hitbox visualization.
+ * It handles movement, firing projectiles, and tracks the number of kills.
  */
 public class UserPlane extends FighterPlane {
 
-    // Image file name for the user plane
-    private static final String IMAGE_NAME = "userplane.png";
+    // Constants for the user plane's configuration
+    private static final String IMAGE_NAME = "userplane.png"; // Image file name for the user plane
+    private static final double Y_UPPER_BOUND = -40;         // Movement upper boundary
+    private static final double Y_LOWER_BOUND = 600.0;       // Movement lower boundary
+    private static final double INITIAL_X_POSITION = 5.0;    // Initial X position
+    private static final double INITIAL_Y_POSITION = 300.0;  // Initial Y position
+    private static final int IMAGE_HEIGHT = 150;             // Height of the plane's image
+    private static final int VERTICAL_VELOCITY = 8;         // Speed of vertical movement
+    private static final boolean DEBUG_HITBOXES = true;      // Enable/disable hitbox visualization
 
-    // Movement boundaries for the user plane
-    private static final double Y_UPPER_BOUND = -40; // Upper boundary for movement
-    private static final double Y_LOWER_BOUND = 600.0; // Lower boundary for movement
-
-    // Initial position and size parameters for the user plane
-    private static final double INITIAL_X_POSITION = 5.0; // Starting X position
-    private static final double INITIAL_Y_POSITION = 300.0; // Starting Y position
-    private static final int IMAGE_HEIGHT = 150; // Height of the plane's image
-
-    // Movement and projectile parameters
-    private static final int VERTICAL_VELOCITY = 11; // Speed of vertical movement
-    private static final int PROJECTILE_X_POSITION = 110; // X offset for projectile spawn
-    private static final int PROJECTILE_Y_POSITION_OFFSET = 20; // Y offset for projectile spawn
-
-    // Debugging toggle for hitbox visualization
-    private static final boolean DEBUG_HITBOXES = true;
-
-    // Current movement direction: -1 for up, 1 for down, 0 for no movement
-    private int velocityMultiplier;
-
-    // Tracks the number of kills made by the user plane
-    private int numberOfKills;
+    // Instance variables for plane behavior and tracking
+    private int velocityMultiplier;                          // -1 for up, 1 for down, 0 for stationary
+    private final KillCountTracker killCountTracker;         // Tracks the number of kills
+    private final ProjectileFiringBehavior projectileFiringBehavior; // Handles projectile creation and firing
 
     /**
      * Constructor for UserPlane.
+     * Initializes the user plane with its position, health, and dependencies.
      *
      * @param initialHealth The starting health of the user plane.
      */
     public UserPlane(int initialHealth) {
         super(IMAGE_NAME, IMAGE_HEIGHT, INITIAL_X_POSITION, INITIAL_Y_POSITION, initialHealth);
         this.velocityMultiplier = 0; // Initialize as stationary
-        this.numberOfKills = 0; // Initialize kill count to zero
+        this.killCountTracker = new KillCountTracker();
+
+        // Initialize the projectile firing behavior for this plane
+        this.projectileFiringBehavior = new DefaultProjectileFiringBehavior(
+            "projectile.png", 20, 15
+        );
+
+        ((DefaultProjectileFiringBehavior) this.projectileFiringBehavior).setFiringActor(this);
     }
 
     /**
-     * Updates the position of the user plane based on its current velocityMultiplier.
+     * Updates the position of the user plane based on its current velocity multiplier.
      * Ensures the plane stays within the defined movement boundaries.
      */
     @Override
     public void updatePosition() {
-        if (isMoving()) { // Check if the plane is currently moving
-            double initialTranslateY = getTranslateY(); // Store the initial position
-            this.moveVertically(VERTICAL_VELOCITY * velocityMultiplier); // Update position based on velocity
-            double newPosition = getLayoutY() + getTranslateY(); // Calculate new position
+        if (isMoving()) { // Check if the plane is moving
+            double newTranslateY = getTranslateY() + VERTICAL_VELOCITY * velocityMultiplier;
 
-            // Reset position if it goes out of bounds
-            if (newPosition < Y_UPPER_BOUND || newPosition > Y_LOWER_BOUND) {
-                this.setTranslateY(initialTranslateY);
+            // Apply boundary checks
+            if (newTranslateY + getLayoutY() < Y_UPPER_BOUND) {
+                newTranslateY = Y_UPPER_BOUND - getLayoutY();
+            } else if (newTranslateY + getLayoutY() > Y_LOWER_BOUND) {
+                newTranslateY = Y_LOWER_BOUND - getLayoutY();
             }
+
+            setTranslateY(newTranslateY); // Update translateY
+            System.out.println("UserPlane - Updated translateY: " + newTranslateY); // Debug log
         }
     }
 
     /**
      * Updates the state of the user plane. Called in each game loop iteration.
-     * Currently handles movement logic.
      */
     @Override
     public void updateActor() {
-        updatePosition(); // Update the position of the user plane
+        updatePosition();
+
+        // Explicitly ensure the layout is updated for JavaFX rendering
+        setTranslateY(getTranslateY());
+
+        // Trigger a visual refresh
+        this.setManaged(false); // Ensure it's not relying on container layout
+        this.setVisible(false); // Temporarily hide to force refresh
+        this.setVisible(true);  // Show it again
+
+        // Debugging output
+        System.out.println("UserPlane Position: X=" + (getLayoutX() + getTranslateX()) +
+                           ", Y=" + (getLayoutY() + getTranslateY()));
     }
+
+
 
     /**
      * Fires a projectile from the user plane's current position.
      *
-     * @return A new UserProjectile instance.
+     * @return A new ActiveActorDestructible projectile instance.
      */
     @Override
     public ActiveActorDestructible fireProjectile() {
-        // Create and return a new projectile at the calculated position
-        return new UserProjectile(PROJECTILE_X_POSITION, getProjectileYPosition(PROJECTILE_Y_POSITION_OFFSET));
+        double currentX = getLayoutX() + getTranslateX() + 110; // Adjust offset for alignment
+        double currentY = getLayoutY() + getTranslateY();       // Sync with updated Y position
+        return projectileFiringBehavior.fireProjectile(currentX, currentY);
     }
 
     /**
@@ -95,66 +109,66 @@ public class UserPlane extends FighterPlane {
      * @return True if the plane is moving, otherwise false.
      */
     private boolean isMoving() {
-        return velocityMultiplier != 0; // Movement occurs if velocityMultiplier is not zero
+        return velocityMultiplier != 0; // Movement occurs if velocity multiplier is not zero
     }
 
     /**
      * Initiates upward movement for the user plane.
      */
     public void moveUp() {
-        velocityMultiplier = -1; // Set velocityMultiplier for upward movement
+        velocityMultiplier = -1; // Set velocity multiplier for upward movement
+        System.out.println("UserPlane - Move Up initiated.");
     }
 
     /**
      * Initiates downward movement for the user plane.
      */
     public void moveDown() {
-        velocityMultiplier = 1; // Set velocityMultiplier for downward movement
+        velocityMultiplier = 1; // Set velocity multiplier for downward movement
+        System.out.println("UserPlane - Move Down initiated.");
     }
 
     /**
      * Stops the user plane's movement.
      */
     public void stop() {
-        velocityMultiplier = 0; // Set velocityMultiplier to zero to stop movement
+        velocityMultiplier = 0; // Set velocity multiplier to zero to stop movement
+        System.out.println("UserPlane - Movement stopped.");
     }
 
     /**
      * Gets the number of kills made by the user plane.
      *
-     * @return The kill count.
+     * @return The current kill count.
      */
     public int getNumberOfKills() {
-        return numberOfKills;
+        return killCountTracker.getKillCount(); // Delegate to KillCountTracker
     }
 
     /**
      * Increments the kill count by 1.
      */
     public void incrementKillCount() {
-        numberOfKills++; // Increase the kill count by 1
+        killCountTracker.incrementKillCount(); // Delegate to KillCountTracker
     }
 
     /**
      * Resets the kill count to zero.
      */
     public void resetKillCount() {
-        this.numberOfKills = 0; // Reset the kill count
+        killCountTracker.resetKillCount(); // Delegate to KillCountTracker
     }
 
     /**
      * Retrieves the reduced bounds for collision detection.
      * This reduces the effective hitbox of the user plane for better gameplay experience.
      *
-     * @return A BoundingBox representing the reduced hitbox.
+     * @return A Bounds object representing the reduced hitbox.
      */
     @Override
     public Bounds getReducedBounds() {
-        // Get the original bounds of the user plane
         Bounds originalBounds = this.getBoundsInLocal();
-        double margin = 20; // Adjust the margin to shrink the hitbox
-
-        // Return a reduced bounding box with the calculated margin
+        double margin = 20;
         return new BoundingBox(
             originalBounds.getMinX() + margin,
             originalBounds.getMinY() + margin,
@@ -165,27 +179,30 @@ public class UserPlane extends FighterPlane {
 
     /**
      * Renders the hitbox for debugging purposes.
-     * Adds a rectangle to the game scene to visualize the reduced hitbox.
+     * Delegates the task to the HitboxRenderer utility.
      *
      * @param root The Group object representing the game scene's root node.
      */
     public void renderHitbox(Group root) {
-        if (!DEBUG_HITBOXES) return; // Skip rendering if debugging is disabled
+        if (DEBUG_HITBOXES) {
+            HitboxRenderer.renderHitbox(getReducedBounds(), root);
+            System.out.println("Rendering hitbox at: " + getReducedBounds());
+        }
+    }
 
-        // Get the reduced hitbox bounds
-        Bounds bounds = getReducedBounds();
-
-        // Create a rectangle to represent the hitbox
-        Rectangle hitbox = new Rectangle(
-            bounds.getMinX(),
-            bounds.getMinY(),
-            bounds.getWidth(),
-            bounds.getHeight()
-        );
-        hitbox.setFill(Color.TRANSPARENT); // Transparent fill for the hitbox
-        hitbox.setStroke(Color.RED);       // Red outline for visibility
-        hitbox.setStrokeWidth(2);          // Optional: Adjust stroke width
-
-        root.getChildren().add(hitbox); // Add the hitbox rectangle to the game scene
+    /**
+     * Provides a string representation of the UserPlane.
+     * Useful for debugging or logging purposes.
+     *
+     * @return A string representing the UserPlane's state.
+     */
+    @Override
+    public String toString() {
+        return "UserPlane{" +
+               "velocityMultiplier=" + velocityMultiplier +
+               ", killCount=" + killCountTracker.getKillCount() +
+               ", positionX=" + getLayoutX() +
+               ", positionY=" + getLayoutY() +
+               '}';
     }
 }
