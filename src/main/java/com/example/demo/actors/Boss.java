@@ -62,19 +62,23 @@ public class Boss extends FighterPlane {
      */
     @Override
     public void updatePosition() {
-        double initialTranslateY = getTranslateY(); // Store the initial translation on Y-axis
 
         // Get the next move value from the movement pattern and move vertically
         moveVertically(movementPattern.getNextMove());
 
         // Ensure the boss stays within vertical boundaries
         double currentPosition = getLayoutY() + getTranslateY();
-        if (currentPosition < Y_POSITION_UPPER_BOUND || currentPosition > Y_POSITION_LOWER_BOUND) {
-            setTranslateY(initialTranslateY); // Reset to previous position if out of bounds
+
+        // Correct position if out of bounds
+        if (currentPosition < Y_POSITION_UPPER_BOUND) {
+            setTranslateY(Y_POSITION_UPPER_BOUND - getLayoutY()); // Reset to upper boundary
+        } else if (currentPosition > Y_POSITION_LOWER_BOUND) {
+            setTranslateY(Y_POSITION_LOWER_BOUND - getLayoutY()); // Reset to lower boundary
         }
 
         synchronizeShieldPosition(); // Ensure shield stays aligned with the boss
     }
+
 
     /**
      * Synchronizes the shield's position with the boss's position.
@@ -172,4 +176,9 @@ public class Boss extends FighterPlane {
     public boolean isShielded() {
         return shieldManager.isShieldActive(); // Delegate shield status to ShieldManager
     }
+    
+    public static boolean isDebugHitboxesEnabled() {
+        return DEBUG_HITBOXES;
+    }
+
 }

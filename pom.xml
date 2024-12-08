@@ -11,9 +11,11 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-<junit.version>5.9.2</junit.version>  </properties>
+    <junit.version>5.9.2</junit.version>
+  </properties>
 
   <dependencies>
+    <!-- JavaFX Dependencies -->
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
@@ -24,8 +26,15 @@
       <artifactId>javafx-fxml</artifactId>
       <version>19.0.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-base</artifactId>
+      <version>19.0.2</version>
+      <scope>test</scope>
+    </dependency>
 
-<dependency>
+    <!-- JUnit Dependencies -->
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>${junit.version}</version>
@@ -36,10 +45,34 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <version>${junit.version}</version>
       <scope>test</scope>
-    </dependency>  </dependencies>
+    </dependency>
+
+    <!-- Mockito Dependencies -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.5.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>5.5.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Byte Buddy Dependency -->
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
+      <version>1.14.7</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <plugins>
+      <!-- Maven Compiler Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -49,6 +82,21 @@
           <target>19</target>
         </configuration>
       </plugin>
+      
+      <!-- Maven Surefire Plugin -->
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0</version>
+          <configuration>
+          	  <argLine>--add-modules ALL-MODULE-PATH</argLine>
+              <forkCount>1</forkCount>
+              <reuseForks>true</reuseForks>
+              <argLine>-XX:+EnableDynamicAgentLoading -Djdk.instrument.traceUsage=true</argLine>
+          </configuration>
+      </plugin>
+
+      <!-- JavaFX Maven Plugin -->
       <plugin>
         <groupId>org.openjfx</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
