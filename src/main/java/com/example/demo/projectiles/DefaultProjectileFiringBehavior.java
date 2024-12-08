@@ -55,7 +55,15 @@ public class DefaultProjectileFiringBehavior implements ProjectileFiringBehavior
      */
     @Override
     public ActiveActorDestructible fireProjectile(double xPosition, double yPosition) {
-        return new UserProjectile(xPosition, yPosition);
+        if (firingActor == null) {
+            throw new IllegalStateException("Firing actor must be set before firing a projectile.");
+        }
+
+        if (firingActor instanceof UserPlane) {
+            return new UserProjectile(xPosition, yPosition); // Use the passed positions
+        } else {
+            throw new IllegalArgumentException("Unsupported firing actor type.");
+        }
     }
 
 
