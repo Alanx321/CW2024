@@ -205,4 +205,9 @@ public class UserPlane extends FighterPlane {
                ", positionY=" + getLayoutY() +
                '}';
     }
+    
+ // Add this to UserPlane.java
+    public boolean isActive() {
+        return getHealth() > 0;
+    }
 }
