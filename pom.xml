@@ -68,6 +68,20 @@
       <version>1.14.7</version>
       <scope>test</scope>
     </dependency>
+  
+  <!-- TestFX Dependencies -->
+    <dependency>
+      <groupId>org.testfx</groupId>
+      <artifactId>testfx-core</artifactId>
+      <version>4.0.16-alpha</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testfx</groupId>
+      <artifactId>testfx-junit5</artifactId>
+      <version>4.0.16-alpha</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -83,18 +97,24 @@
         </configuration>
       </plugin>
       
-      <!-- Maven Surefire Plugin -->
       <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.0.0</version>
-          <configuration>
-          	  <argLine>--add-modules ALL-MODULE-PATH</argLine>
-              <forkCount>1</forkCount>
-              <reuseForks>true</reuseForks>
-              <argLine>-XX:+EnableDynamicAgentLoading -Djdk.instrument.traceUsage=true</argLine>
-          </configuration>
-      </plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.0.0</version>
+    <configuration>
+        <!-- Add JVM options to handle JavaFX module access and enable dynamic agent loading -->
+        <argLine>
+            --add-exports javafx.graphics/com.sun.javafx.application=ALL-UNNAMED 
+            --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED 
+            --add-modules javafx.controls,javafx.fxml 
+            -XX:+EnableDynamicAgentLoading 
+            -Djdk.instrument.traceUsage=true
+        </argLine>
+        <!-- Use a single JVM fork for consistent behavior -->
+        <forkCount>1</forkCount>
+        <reuseForks>true</reuseForks>
+    </configuration>
+</plugin>
 
       <!-- JavaFX Maven Plugin -->
       <plugin>
@@ -106,6 +126,7 @@
             <!-- Default configuration for running with: mvn clean javafx:run -->
             <id>default-cli</id>
             <configuration>
+              <addModules>javafx.controls,javafx.fxml</addModules>
               <mainClass>com.example.demo/com.example.demo.controller.Main</mainClass>
               <launcher>app</launcher>
               <jlinkZipName>app</jlinkZipName>

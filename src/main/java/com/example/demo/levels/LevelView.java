@@ -94,4 +94,13 @@ public class LevelView {
     public void updateScore(int score) {
         scoreDisplay.setText("Score: " + score); // Update the score display text
     }
+    
+    /**
+     * Getter for the score display text object.
+     *
+     * @return The Text object representing the score display.
+     */
+    public Text getScoreDisplay() {
+        return scoreDisplay;
+    }
 }
