@@ -87,7 +87,6 @@ public class MainMenuTest extends ApplicationTest {
         verify(mockHowToPlayWindow, times(1)).display();
     }
 
-
     /**
      * Tests the functionality of the START button.
      * Verifies that clicking the button stops the background music and starts the game.

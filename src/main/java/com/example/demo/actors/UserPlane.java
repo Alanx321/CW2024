@@ -191,10 +191,11 @@ public class UserPlane extends FighterPlane {
     }
 
     /**
-     * Provides a string representation of the UserPlane.
+     * Generates a string representation of the UserPlane object, detailing its current state.
+     * Includes attributes such as velocity multiplier, kill count, and position coordinates.
      * Useful for debugging or logging purposes.
      *
-     * @return A string representing the UserPlane's state.
+     * @return A formatted string with the UserPlane's state information.
      */
     @Override
     public String toString() {
@@ -205,9 +206,15 @@ public class UserPlane extends FighterPlane {
                ", positionY=" + getLayoutY() +
                '}';
     }
-    
- // Add this to UserPlane.java
+
+    /**
+     * Determines if the UserPlane is currently active.
+     * A UserPlane is considered active if its health is greater than zero.
+     *
+     * @return true if the UserPlane is active, false otherwise.
+     */
     public boolean isActive() {
         return getHealth() > 0;
     }
+
 }

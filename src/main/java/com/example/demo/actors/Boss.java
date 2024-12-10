@@ -177,8 +177,9 @@ public class Boss extends FighterPlane {
         return shieldManager.isShieldActive(); // Delegate shield status to ShieldManager
     }
     
-    public static boolean isDebugHitboxesEnabled() {
-        return DEBUG_HITBOXES;
-    }
-
+ // This method returns the current state of the DEBUG_HITBOXES flag.
+ // It indicates whether debug hitboxes are enabled in the application.
+ public static boolean isDebugHitboxesEnabled() {
+     return DEBUG_HITBOXES;
+ }
 }

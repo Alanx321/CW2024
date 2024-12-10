@@ -44,100 +44,112 @@ public class MainMenu extends Application {
         this.howToPlayWindow = howToPlayWindow;
     }
 
+    /**
+     * Initializes and displays the main menu of the game.
+     * Sets up the background, title text, background music, and a START button to begin the game.
+     *
+     * @param primaryStage The primary stage for the application's UI.
+     */
     @Override
     public void start(Stage primaryStage) {
-        // Set up the background image
+        // Set up the background image for the menu
         Image backgroundImage = new Image(getClass().getResource("/com/example/demo/images/menu_background.jpg").toExternalForm());
         ImageView backgroundView = new ImageView(backgroundImage);
-        backgroundView.setFitWidth(1300);
-        backgroundView.setFitHeight(750);
+        backgroundView.setFitWidth(1300); // Set the width of the background
+        backgroundView.setFitHeight(750); // Set the height of the background
 
-        // Set up the title text
+        // Set up the title text for the main menu
         Text titleText = new Text("SPACE BATTLE");
-        titleText.setFont(new Font("Arial", 50));
-        titleText.setStyle("-fx-fill: white;");
+        titleText.setFont(new Font("Arial", 50)); // Set the font and size for the title
+        titleText.setStyle("-fx-fill: white;"); // Apply a white color style to the text
 
-        // Set up the background music
+        // Set up the background music for the menu
         Media backgroundMusic = new Media(getClass().getResource("/com/example/demo/sounds/menu_background.wav").toExternalForm());
         backgroundMusicPlayer = new MediaPlayer(backgroundMusic);
-        backgroundMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-        backgroundMusicPlayer.play();
+        backgroundMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE); // Loop the music indefinitely
+        backgroundMusicPlayer.play(); // Start playing the background music
 
-        // Set up the START button
+        // Set up the START button to begin the game
         Button startButton = new Button("START");
-        startButton.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-size: 20px;");
-        startButton.setOnAction(e -> {
-            playButtonClickSound();
-            backgroundMusicPlayer.stop();
+        startButton.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-size: 20px;"); // Style the button
+        startButton.setOnAction(e -> { 
+            playButtonClickSound(); // Play a click sound effect
+            backgroundMusicPlayer.stop(); // Stop the background music when starting the game
             try {
-                Controller controller = new Controller(primaryStage);
-                controller.launchGame();
+                Controller controller = new Controller(primaryStage); // Initialize the game controller
+                controller.launchGame(); // Launch the game
             } catch (Exception ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(); // Handle any exceptions during game launch
             }
         });
+   
 
-        // Set up the HOW TO PLAY button
+
+     // Set up the HOW TO PLAY button to display gameplay instructions
         Button howToPlayButton = new Button("HOW TO PLAY");
-        howToPlayButton.setStyle("-fx-background-color: blue; -fx-text-fill: white; -fx-font-size: 20px;");
+        howToPlayButton.setStyle("-fx-background-color: blue; -fx-text-fill: white; -fx-font-size: 20px;"); // Style the button
         howToPlayButton.setOnAction(e -> {
-            playButtonClickSound();
-            howToPlayWindow.display();
+            playButtonClickSound(); // Play a click sound effect
+            howToPlayWindow.display(); // Open the "How to Play" window
         });
 
-        // Set up the QUIT button
+        // Set up the QUIT button to close the game
         Button quitButton = new Button("QUIT");
-        quitButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-size: 20px;");
+        quitButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-size: 20px;"); // Style the button
         quitButton.setOnAction(e -> {
-            playButtonClickSound();
-            backgroundMusicPlayer.stop();
-            primaryStage.close();
+            playButtonClickSound(); // Play a click sound effect
+            backgroundMusicPlayer.stop(); // Stop the background music
+            primaryStage.close(); // Close the application
         });
 
-        // Arrange buttons and title in a vertical layout
-        VBox vbox = new VBox(20, titleText, startButton, howToPlayButton, quitButton);
-        vbox.setAlignment(Pos.CENTER);
+        // Arrange buttons and title text in a vertical layout using VBox
+        VBox vbox = new VBox(20, titleText, startButton, howToPlayButton, quitButton); // Add title and buttons with spacing
+        vbox.setAlignment(Pos.CENTER); // Center the layout on the screen
 
-        // Create the root layout with background and vbox
-        StackPane root = new StackPane(backgroundView, vbox);
+        // Create the root layout with the background image and VBox
+        StackPane root = new StackPane(backgroundView, vbox); // Combine the background and menu layout
 
-        // Set up the scene and primary stage
-        Scene scene = new Scene(root, 1300, 750);
-        primaryStage.setTitle("Space Battle");
-        primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
-        primaryStage.show();
+        // Set up the scene with the root layout and configure the primary stage
+        Scene scene = new Scene(root, 1300, 750); // Set the scene dimensions
+        primaryStage.setTitle("Space Battle"); // Set the title of the primary stage
+        primaryStage.setScene(scene); // Attach the scene to the primary stage
+        primaryStage.setResizable(false); // Prevent resizing of the game window
+        primaryStage.show(); // Display the main menu
     }
 
     /**
      * Plays the button click sound effect.
+     * Used to provide auditory feedback when a button is clicked in the UI.
+     * Handles any exceptions that might occur during media playback.
      */
     private void playButtonClickSound() {
         try {
             Media clickSound = new Media(getClass().getResource("/com/example/demo/sounds/button_click.wav").toExternalForm());
             MediaPlayer clickPlayer = new MediaPlayer(clickSound);
-            clickPlayer.play();
+            clickPlayer.play(); // Play the button click sound effect
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(); // Log any exceptions for debugging
         }
     }
 
     /**
      * Getter for the background music player.
-     * Allows external classes (e.g., tests) to access the music player.
+     * Provides access to the background music MediaPlayer instance,
+     * enabling external classes (e.g., for testing) to interact with or modify it.
      *
      * @return The background music MediaPlayer instance.
      */
     public MediaPlayer getBackgroundMusicPlayer() {
-        return backgroundMusicPlayer;
+        return backgroundMusicPlayer; // Return the background music player instance
     }
 
     /**
      * Entry point for launching the application.
+     * Initializes and starts the JavaFX application.
      *
-     * @param args Command-line arguments (unused).
+     * @param args Command-line arguments (currently unused).
      */
     public static void main(String[] args) {
-        launch(args);
+        launch(args); // Launch the JavaFX application
     }
 }

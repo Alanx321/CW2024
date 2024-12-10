@@ -139,9 +139,10 @@ public abstract class FighterPlane extends ActiveActorDestructible {
     public abstract void updateActor();
 
     /**
-     * Provides detailed debug information about the fighter plane.
+     * Generates a string representation of the FighterPlane object for debugging purposes.
+     * Includes key attributes such as health, layout, and translation coordinates.
      *
-     * @return A string containing information about the fighter plane.
+     * @return A formatted string with detailed information about the FighterPlane's state.
      */
     @Override
     public String toString() {
@@ -153,4 +154,5 @@ public abstract class FighterPlane extends ActiveActorDestructible {
                 ", translateY=" + getTranslateY() +
                 '}';
     }
+
 }
