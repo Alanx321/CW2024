@@ -85,14 +85,15 @@ Steps to Compile and Run in Eclipse
    - Go to Run Configurations:
    - Under the Arguments tab, add the following to VM arguments:
 
-     --module-path <path-to-javafx-sdk>/lib 
-	   --add-modules javafx.controls,javafx.media
-	   -Xms1024m -Xmx4096m
-	   --add-exports javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
-	   --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
-     
-	  - Replace <path-to-javafx-sdk> with the path to your JavaFX SDK 
-        	installation.
+     ### JVM Options
+```bash
+--module-path /path/to/javafx-sdk/lib\
+--add-modules javafx.controls,javafx.media \
+-Xms1024m -Xmx4096m \
+--add-exports javafx.graphics/com.sun.javafx.application=ALL-UNNAMED \
+--add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED\
+Replace <path-to-javafx-sdk> with the path to your JavaFX SDK installation.
+```
 
 4. Build the Project:
 	 - Eclipse will automatically build the project when you import it.
